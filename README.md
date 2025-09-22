@@ -6,5 +6,12 @@
 - SparkFun Electronics DEV-12640 Arduino Pro Micro
 - *MAKE SURE* that Arduino IDE is in 5v mode, not 3.3v, this will cause issues
 
-### NEW CONTROLLER 
+### Dragon Scales (Operator)
+- Raspberry Pi Pico (original - 2020 series)
+- Twidec Rocker Toggle Switch 12V / 20A Red LED Light (ASW-07DRRMZ)
+- Custom printed circuit board (PCB)
+
+### NEW CONTROLLER (Driver)
+
+### NEW CONTROLLER (Operator)
 
