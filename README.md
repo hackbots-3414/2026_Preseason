@@ -6,3 +6,5 @@
 - SparkFun Electronics DEV-12640 Arduino Pro Micro
 - *MAKE SURE* that Arduino IDE is in 5v mode, not 3.3v, this will cause issues
 
+### NEW CONTROLLER 
+
