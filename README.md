@@ -18,6 +18,14 @@
 
 ### Gampad Tester
 https://hardwaretester.com/gamepad
+(Has better Circularity Control) https://www.hlplanet.com/gamepad-tester/
+
+### Target Goals For New Controller (can be changed with new ideas or remove with potential problems)
+- Feedback to the driver (Lights or a motor for rumble)
+- Add flexable comfortable material to increase feelability
+- Increase modularity with 3d printed parts
+- 
+
 
 ### Current Research
 
