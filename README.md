@@ -15,6 +15,10 @@
 
 ### NEW CONTROLLER (Operator)
 
+
+### Gampad Tester
+https://hardwaretester.com/gamepad
+
 ### Current Research
 
 Custom Controller With Input Labs https://share.google/r9ycvK85BpQpzgoux
