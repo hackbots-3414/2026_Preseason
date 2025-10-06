@@ -1,5 +1,6 @@
 # 2026_Preseason Controller
 
+## Probally gonna get a better repo for this information this is just for preseason
 ### OLD CONTROLLER Dragon Reins (Driver)
 - Apem HF22S10 single button joystick (2)
 - Apem 505-442 Switch Hardware HARNESS HF BUTTONS & DUAL (2) 
