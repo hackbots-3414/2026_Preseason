@@ -34,3 +34,5 @@ Grips
 Bad hand feel - Not curved - hard
 joysticks - hard resistance
 uncomfortable
+
+Wants more rounded, easy to hold, remove grips
