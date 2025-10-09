@@ -13,6 +13,8 @@
 - SparkFun Electronics DEV-12640 Arduino Pro Micro
 
 ### NEW CONTROLLER (Driver)
+- Raspberry Pi Pico 2
+- 
 
 ### NEW CONTROLLER (Operator)
 
