@@ -27,7 +27,7 @@ https://hardwaretester.com/gamepad
 - Feedback to the driver (Lights or a motor for rumble)
 - Add flexable comfortable material to increase feelability
 - Increase modularity with 3d printed parts
-- 
+- Add Diegetic Indicators
 
 
 ### Current Research
