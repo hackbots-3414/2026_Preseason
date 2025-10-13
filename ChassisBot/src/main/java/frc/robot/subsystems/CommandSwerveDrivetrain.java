@@ -17,12 +17,13 @@ import edu.wpi.first.math.numbers.N1;
 import edu.wpi.first.math.numbers.N3;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.DriverStation.Alliance;
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj.Notifier;
 import edu.wpi.first.wpilibj.RobotController;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Subsystem;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
-
+import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine.Direction;
 import frc.robot.generated.TunerConstants.TunerSwerveDrivetrain;
 
 /**
@@ -284,5 +285,21 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
         Matrix<N3, N1> visionMeasurementStdDevs
     ) {
         super.addVisionMeasurement(visionRobotPoseMeters, Utils.fpgaToCurrentTime(timestampSeconds), visionMeasurementStdDevs);
+    }
+
+    public void setupSysId() {
+        // Translation
+        SmartDashboard.putData("Translation Quasistatic Forward", m_sysIdRoutineTranslation.quasistatic(Direction.kForward));
+        SmartDashboard.putData("Translation Quasistatic Reverse", m_sysIdRoutineTranslation.quasistatic(Direction.kReverse));
+
+        SmartDashboard.putData("Translation Dynamic Forward", m_sysIdRoutineTranslation.dynamic(Direction.kForward));
+        SmartDashboard.putData("Translation Dynamic Reverse", m_sysIdRoutineTranslation.dynamic(Direction.kReverse));
+
+        // Steer
+        SmartDashboard.putData("Steer Quasistatic Forward", m_sysIdRoutineSteer.quasistatic(Direction.kForward));
+        SmartDashboard.putData("Steer Quasistatic Reverse", m_sysIdRoutineSteer.quasistatic(Direction.kReverse));
+
+        SmartDashboard.putData("Steer Dynamic Forward", m_sysIdRoutineSteer.dynamic(Direction.kForward));
+        SmartDashboard.putData("Steer Dynamic Reverse", m_sysIdRoutineSteer.dynamic(Direction.kReverse));
     }
 }
