@@ -29,6 +29,9 @@ https://hardwaretester.com/gamepad
 - Increase modularity with 3d printed parts
 - Add Diegetic Indicators
 
+### Survey Results
+- https://docs.google.com/spreadsheets/d/1WdU0KlCNY244AFOX333u-de5YBfFwFpkB5UNWHj5Cc8/edit?usp=sharing
+
 
 ### Current Research
 
