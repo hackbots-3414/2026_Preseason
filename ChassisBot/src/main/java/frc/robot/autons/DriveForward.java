@@ -4,8 +4,12 @@
 
 package frc.robot.autons;
 
+import com.ctre.phoenix6.swerve.SwerveRequest;
+
 import edu.wpi.first.math.geometry.Pose2d;
-import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
+import edu.wpi.first.math.geometry.Rotation2d;
+import edu.wpi.first.math.geometry.Transform2d;
+import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import edu.wpi.first.wpilibj2.command.Command;
 import frc.robot.subsystems.CommandSwerveDrivetrain;
 
@@ -13,14 +17,14 @@ import frc.robot.subsystems.CommandSwerveDrivetrain;
 public class DriveForward extends Command {
 
   private CommandSwerveDrivetrain drivetrain;
-  private Pose2d initialPosition;
-  private double targetDistance;
+  private Pose2d finalPosition;
 
   /** Creates a new DriveForward. */
-  public DriveForward(CommandSwerveDrivetrain drivetrain){
+  public DriveForward(CommandSwerveDrivetrain drivetrain, Pose2d finalPosition) {
     addRequirements(drivetrain);
 
     this.drivetrain = drivetrain;
+    this.finalPosition = finalPosition;
 
     // Use addRequirements() here to declare subsystem dependencies.
   }
@@ -28,25 +32,30 @@ public class DriveForward extends Command {
   // Called when the command is initially scheduled.
   @Override
   public void initialize() {
-    initialPosition = drivetrain.getPose();
+    finalPosition = finalPosition.plus(new Transform2d(drivetrain.getPose().getMeasureX().magnitude(), 0, new Rotation2d(0)));
+    drivetrain.setControl(new SwerveRequest.ApplyRobotSpeeds().withSpeeds(new ChassisSpeeds(0.5, 0, 0)));
   }
 
   // Called every time the scheduler runs while the command is scheduled.
   @Override
   public void execute() {
-    
   }
 
   // Called once the command ends or is interrupted.
   @Override
-  public void end(boolean interrupted) {}
+  public void end(boolean interrupted) {
+    drivetrain.setControl(new SwerveRequest.ApplyRobotSpeeds().withSpeeds(new ChassisSpeeds(0, 0, 0)));
+  }
 
   /**
    * @return true when the robot has reached the target distance
    */
   @Override
   public boolean isFinished() {
-    if targetDistance 
-    return true;
+    return computeRemainingDistance() <= 0;
+  }
+
+  private double computeRemainingDistance() {
+    return finalPosition.minus(drivetrain.getPose()).getMeasureX().magnitude();
   }
 }
