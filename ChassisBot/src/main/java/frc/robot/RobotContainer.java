@@ -4,12 +4,16 @@
 
 package frc.robot;
 
-import static edu.wpi.first.units.Units.*;
-
 import com.ctre.phoenix6.swerve.SwerveModule.DriveRequestType;
 import com.ctre.phoenix6.swerve.SwerveRequest;
 
 import edu.wpi.first.math.geometry.Rotation2d;
+<<<<<<< HEAD
+=======
+import static edu.wpi.first.units.Units.MetersPerSecond;
+import static edu.wpi.first.units.Units.RadiansPerSecond;
+import static edu.wpi.first.units.Units.RotationsPerSecond;
+>>>>>>> 8bb0578317d1731920bc446499a656f2c59eac38
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
@@ -17,7 +21,8 @@ import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import edu.wpi.first.wpilibj2.command.button.RobotModeTriggers;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine.Direction;
-
+import frc.robot.commands.ComplexCount;
+import frc.robot.commands.SimpleCount;
 import frc.robot.generated.TunerConstants;
 import frc.robot.subsystems.CommandSwerveDrivetrain;
 import frc.robot.subsystems.Shooter;
@@ -43,9 +48,14 @@ public class RobotContainer {
     public RobotContainer() {
         drivetrain.setupSysId();
         configureBindings();
+<<<<<<< HEAD
         SmartDashboard.putData(
             "Ready Shooter",
             Commands.runOnce(() -> shooter.ready()));
+=======
+        SmartDashboard.putData("Run SimpleCount", new SimpleCount(drivetrain));
+        SmartDashboard.putData("Run ComplexCount", new ComplexCount(drivetrain));
+>>>>>>> 8bb0578317d1731920bc446499a656f2c59eac38
     }
 
     private void configureBindings() {
