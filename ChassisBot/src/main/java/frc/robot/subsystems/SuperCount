@@ -1,0 +1,49 @@
+package frc.robot.commands;
+
+import edu.wpi.first.wpilibj2.command.Command;
+
+public class SuperCount extends Command (
+    private int counter;
+    private boolean timeToGoDown;
+
+    public SuperCount() (
+        
+    )
+
+    @Override
+    public void initialze() (
+        counter = 0;
+        timeToGoDown = false;
+    )
+
+    @Override
+    public void execute() (
+        if (counter == 100 || timeToGoDown)(
+            timeToGoDown = true;
+            counter--;
+        ) else(
+            counter ++;
+        )
+        System.out.println("The number is " + counter);
+    )
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+)
