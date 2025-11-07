@@ -45,4 +45,5 @@ Stellar Robotics Custom Controller https://share.google/lo1KKRzHkb35g2otB
 
 ## Rules That Must Be Followed (FROM FIRST ROBOTICS)
 - The controller must connect to the robot's control system via a wired connection, such as USB (Cannot Be Wireless)
--  
+- (Custom Controller / Custom Devices) must be produced and shown during the robot inspection per (First Robotics saftey manual 2025 section 9)
+- 
