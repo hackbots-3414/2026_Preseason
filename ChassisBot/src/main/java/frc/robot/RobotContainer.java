@@ -16,10 +16,13 @@ import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import edu.wpi.first.wpilibj2.command.button.RobotModeTriggers;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine.Direction;
-
+import frc.robot.commands.ReverseCount;
+import frc.robot.commands.SuperDuperCount;
+import frc.robot.commands.SwitchCount;
+import frc.robot.commands.SuperCount;
+import frc.robot.commands.NormalCount;
 import frc.robot.generated.TunerConstants;
 import frc.robot.subsystems.CommandSwerveDrivetrain;
-import frc.robot.subsystems.Shooter;
 
 public class RobotContainer {
     private double maxSpeed = TunerConstants.kSpeedAt12Volts.in(MetersPerSecond); // kSpeedAt12Volts desired top speed
@@ -37,14 +40,19 @@ public class RobotContainer {
     private final CommandXboxController joystick = new CommandXboxController(0);
 
     public final CommandSwerveDrivetrain drivetrain = TunerConstants.createDrivetrain();
-    private final Shooter shooter = new Shooter();
 
     public RobotContainer() {
         drivetrain.setupSysId();
         configureBindings();
-        SmartDashboard.putData( 
-            "Ready Shooter",
-            Commands.runOnce(   () -> shooter.ready()   ));
+
+        Command run = Commands.run(this::foo);
+
+        SmartDashboard.putData("Run Command", run);
+        SmartDashboard.putData("Ready NormalCount", new NormalCount());
+        SmartDashboard.putData("Ready ReverseCount", new ReverseCount());
+        SmartDashboard.putData("Ready SuperCount", new SuperCount());
+        SmartDashboard.putData("Ready SuperDuperCount", new SuperDuperCount());
+        SmartDashboard.putData("Ready SwitchCount", new SwitchCount());
     }
 
     private void configureBindings() {
@@ -86,5 +94,9 @@ public class RobotContainer {
 
     public Command getAutonomousCommand() {
         return Commands.print("No autonomous command configured");
+    }
+    
+    private void foo() {
+        System.out.println("Running foo()");
     }
 }
