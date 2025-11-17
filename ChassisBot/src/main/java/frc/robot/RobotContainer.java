@@ -12,6 +12,7 @@ import edu.wpi.first.math.geometry.Rotation2d;
 import static edu.wpi.first.units.Units.MetersPerSecond;
 import static edu.wpi.first.units.Units.RadiansPerSecond;
 import static edu.wpi.first.units.Units.RotationsPerSecond;
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import edu.wpi.first.wpilibj2.command.button.RobotModeTriggers;
@@ -73,6 +74,12 @@ public class RobotContainer {
         joystick.start().and(joystick.y()).whileTrue(drivetrain.sysIdQuasistatic(Direction.kForward));
         joystick.start().and(joystick.x()).whileTrue(drivetrain.sysIdQuasistatic(Direction.kReverse));
 
+        SmartDashboard.putData("quasistatic forward steer", drivetrain.sysIdQuasistaticSteer(Direction.kForward));
+        SmartDashboard.putData("quasistatic reverse steer", drivetrain.sysIdQuasistaticSteer(Direction.kReverse));
+        SmartDashboard.putData("dynamic forward steer", drivetrain.sysIdDynamicSteer(Direction.kForward));
+        SmartDashboard.putData("dynamic reverse steer", drivetrain.sysIdDynamicSteer(Direction.kReverse));
+
+
         // reset the field-centric heading on left bumper press
         joystick.leftBumper().onTrue(drivetrain.runOnce(() -> drivetrain.seedFieldCentric()));
 
@@ -80,7 +87,10 @@ public class RobotContainer {
     }
 
     public Command getAutonomousCommand() {
-        return new DriveForward(drivetrain, new Pose2d(1, 0, new Rotation2d(0)));
+        return new DriveForward(drivetrain, new Pose2d(1, 0, new Rotation2d(0))) // Robot Relative Coordinates
+         .andThen( new DriveForward( drivetrain, new Pose2d(0,1, new Rotation2d(0))))
+        .andThen( new DriveForward( drivetrain, new Pose2d(-1,0, new Rotation2d(0))))
+        .andThen( new DriveForward( drivetrain, new Pose2d(0,-1, new Rotation2d(0))));
         // return Commands.print("No autonomous command configured");
     }
 }

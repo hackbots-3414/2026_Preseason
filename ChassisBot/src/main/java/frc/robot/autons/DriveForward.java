@@ -19,8 +19,11 @@ public class DriveForward extends Command {
   private CommandSwerveDrivetrain drivetrain;
   private Pose2d finalPosition;
 
-  /** Creates a new DriveForward. */
-  public DriveForward(CommandSwerveDrivetrain drivetrain, Pose2d finalPosition) {
+  /** Creates a new DriveForward. 
+   * @param drivetrain
+   * @param finalPosition relative to starting position
+  */
+  public DriveForward(CommandSwerveDrivetrain drivetrain, Pose2d finalPosition) { 
     addRequirements(drivetrain);
 
     this.drivetrain = drivetrain;
@@ -32,13 +35,16 @@ public class DriveForward extends Command {
   // Called when the command is initially scheduled.
   @Override
   public void initialize() {
-    finalPosition = finalPosition.plus(new Transform2d(drivetrain.getPose().getMeasureX().magnitude(), 0, new Rotation2d(0)));
-    drivetrain.setControl(new SwerveRequest.ApplyRobotSpeeds().withSpeeds(new ChassisSpeeds(0.5, 0, 0)));
+    finalPosition = finalPosition.plus(new Transform2d(drivetrain.getPose().getMeasureX().magnitude(), drivetrain.getPose().getMeasureY().magnitude(), new Rotation2d(0)));
   }
 
   // Called every time the scheduler runs while the command is scheduled.
   @Override
   public void execute() {
+    drivetrain.setControl(new SwerveRequest.ApplyRobotSpeeds().withSpeeds(
+      new ChassisSpeeds(computeChassisSpeed(computeRemainingDistanceX()),
+       computeChassisSpeed(computeRemainingDistanceY()), 
+       0)));
   }
 
   // Called once the command ends or is interrupted.
@@ -52,10 +58,23 @@ public class DriveForward extends Command {
    */
   @Override
   public boolean isFinished() {
-    return computeRemainingDistance() <= 0;
+    return Math.abs(computeRemainingDistanceX()) <= 0.3 && Math.abs(computeRemainingDistanceY()) <= 0.3;
   }
 
-  private double computeRemainingDistance() {
+  private double computeRemainingDistanceX() {
     return finalPosition.minus(drivetrain.getPose()).getMeasureX().magnitude();
+  }
+
+  private double computeRemainingDistanceY(){
+    return finalPosition.minus(drivetrain.getPose()).getMeasureY().magnitude();
+  }
+
+  private double computeChassisSpeed(double remainingDistance){
+    if( Math.abs(remainingDistance) <= 0.3){
+      return 0;
+    }
+
+    return 0.5 * Math.signum(remainingDistance);
+    
   }
 }
