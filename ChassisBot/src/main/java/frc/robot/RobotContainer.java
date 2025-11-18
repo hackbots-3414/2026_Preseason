@@ -11,7 +11,6 @@ import edu.wpi.first.math.geometry.Rotation2d;
 import static edu.wpi.first.units.Units.MetersPerSecond;
 import static edu.wpi.first.units.Units.RadiansPerSecond;
 import static edu.wpi.first.units.Units.RotationsPerSecond;
-import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
@@ -41,13 +40,6 @@ public class RobotContainer {
     public RobotContainer() {
         drivetrain.setupSysId();
         configureBindings();
-
-        Command run = Commands.run(this::foo);
-
-        SmartDashboard.putData("Run Command", run);
-
-        Trigger myArbitraryTrigger = new Trigger(() -> true);
-
     }
 
     private void configureBindings() {
@@ -92,9 +84,5 @@ public class RobotContainer {
 
     public Command getAutonomousCommand() {
         return Commands.print("No autonomous command configured");
-    }
-
-    private void foo() {
-        System.out.println("Running foo()");
     }
 }
