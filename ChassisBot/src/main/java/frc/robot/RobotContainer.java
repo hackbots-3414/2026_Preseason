@@ -18,9 +18,6 @@ import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import edu.wpi.first.wpilibj2.command.button.RobotModeTriggers;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine.Direction;
-import frc.robot.commands.RegularCount;
-import frc.robot.commands.ReverseCount;
-import frc.robot.commands.SuperCount;
 import frc.robot.generated.TunerConstants;
 import frc.robot.subsystems.CommandSwerveDrivetrain;
 
@@ -44,20 +41,10 @@ public class RobotContainer {
     public RobotContainer() {
         drivetrain.setupSysId();
         configureBindings();
-        SmartDashboard.putData("Run RegularCount", new RegularCount());
-        SmartDashboard.putData("Run ReverseCount", new ReverseCount());
-        SmartDashboard.putData("Run SuperCount", new SuperCount());
-
-        Command composition = Commands.deadline(
-            new RegularCount(),
-            new ReverseCount()
-        );
 
         Command run = Commands.run(this::foo);
 
         SmartDashboard.putData("Run Command", run);
-
-        SmartDashboard.putData("Composition", composition);
 
         Trigger myArbitraryTrigger = new Trigger(() -> true);
 
