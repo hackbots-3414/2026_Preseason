@@ -16,6 +16,7 @@ import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import edu.wpi.first.wpilibj2.command.button.RobotModeTriggers;
+import edu.wpi.first.wpilibj2.command.button.Trigger;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine.Direction;
 import frc.robot.commands.RegularCount;
 import frc.robot.commands.ReverseCount;
@@ -57,6 +58,9 @@ public class RobotContainer {
         SmartDashboard.putData("Run Command", run);
 
         SmartDashboard.putData("Composition", composition);
+
+        Trigger myArbitraryTrigger = new Trigger(() -> true);
+
     }
 
     private void configureBindings() {
@@ -78,7 +82,9 @@ public class RobotContainer {
             drivetrain.applyRequest(() -> idle).ignoringDisable(true)
         );
 
-        joystick.a().whileTrue(drivetrain.applyRequest(() -> brake));
+
+        Trigger trigger = joystick.a();
+        trigger.whileTrue(drivetrain.applyRequest(() -> brake));
         joystick.b().whileTrue(drivetrain.applyRequest(() ->
             point.withModuleDirection(new Rotation2d(-joystick.getLeftY(), -joystick.getLeftX()))
         ));
@@ -91,8 +97,9 @@ public class RobotContainer {
         joystick.start().and(joystick.x()).whileTrue(drivetrain.sysIdQuasistatic(Direction.kReverse));
 
         // reset the field-centric heading on left bumper press
-        joystick.leftBumper().onTrue(drivetrain.runOnce(() -> drivetrain.seedFieldCentric()));
-
+        joystick.leftBumper()
+            .onTrue(drivetrain.runOnce(() -> drivetrain.seedFieldCentric()));
+        
         drivetrain.registerTelemetry(logger::telemeterize);
     }
 
