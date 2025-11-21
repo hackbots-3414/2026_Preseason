@@ -5,6 +5,7 @@ import java.util.function.Supplier;
 import com.ctre.phoenix6.SignalLogger;
 import com.ctre.phoenix6.Utils;
 import com.ctre.phoenix6.swerve.SwerveDrivetrainConstants;
+import com.ctre.phoenix6.swerve.SwerveModule.DriveRequestType;
 import com.ctre.phoenix6.swerve.SwerveModuleConstants;
 import com.ctre.phoenix6.swerve.SwerveRequest;
 
@@ -13,7 +14,6 @@ import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.numbers.N1;
 import edu.wpi.first.math.numbers.N3;
-import static edu.wpi.first.units.Units.Second;
 import static edu.wpi.first.units.Units.Volts;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.DriverStation.Alliance;
@@ -79,36 +79,6 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
         )
     );
 
-    /*
-     * SysId routine for characterizing rotation.
-     * This is used to find PID gains for the FieldCentricFacingAngle HeadingController.
-     * See the documentation of SwerveRequest.SysIdSwerveRotation for info on importing the log to SysId.
-     */
-    private final SysIdRoutine m_sysIdRoutineRotation = new SysIdRoutine(
-        new SysIdRoutine.Config(
-            /* This is in radians per second², but SysId only supports "volts per second" */
-            Volts.of(Math.PI / 6).per(Second),
-            /* This is in radians per second, but SysId only supports "volts" */
-            Volts.of(Math.PI),
-            null, // Use default timeout (10 s)
-            // Log state with SignalLogger class
-            state -> SignalLogger.writeString("SysIdRotation_State", state.toString())
-        ),
-        new SysIdRoutine.Mechanism(
-            output -> {
-                /* output is actually radians per second, but SysId only supports "volts" */
-                setControl(m_rotationCharacterization.withRotationalRate(output.in(Volts)));
-                /* also log the requested output for SysId */
-                SignalLogger.writeDouble("Rotational_Rate", output.in(Volts));
-            },
-            null,
-            this
-        )
-    );
-
-    /* The SysId routine to test */
-    private final SysIdRoutine m_sysIdRoutineToApply = m_sysIdRoutineTranslation;
-
     /**
      * Constructs a CTRE SwerveDrivetrain using the specified constants.
      * <p>
@@ -139,26 +109,8 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
         return this.run(() -> this.setControl(requestSupplier.get()));
     }
 
-    /**
-     * Runs the SysId Quasistatic test in the given direction for the routine
-     * specified by {@link #m_sysIdRoutineToApply}.
-     *
-     * @param direction Direction of the SysId Quasistatic test
-     * @return Command to run
-     */
-    public Command sysIdQuasistatic(SysIdRoutine.Direction direction) {
-        return m_sysIdRoutineToApply.quasistatic(direction);
-    }
-
-    /**
-     * Runs the SysId Dynamic test in the given direction for the routine
-     * specified by {@link #m_sysIdRoutineToApply}.
-     *
-     * @param direction Direction of the SysId Dynamic test
-     * @return Command to run
-     */
-    public Command sysIdDynamic(SysIdRoutine.Direction direction) {
-        return m_sysIdRoutineToApply.dynamic(direction);
+    public Command driveForwards() {
+        return applyRequest(() -> new SwerveRequest.RobotCentric().withVelocityX(4.0).withDriveRequestType(DriveRequestType.Velocity));
     }
 
     @Override
@@ -233,17 +185,17 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
 
     public void setupSysId() {
         // Translation
-        SmartDashboard.putData("Translation Quasistatic Forward", m_sysIdRoutineTranslation.quasistatic(Direction.kForward));
-        SmartDashboard.putData("Translation Quasistatic Reverse", m_sysIdRoutineTranslation.quasistatic(Direction.kReverse));
+        SmartDashboard.putData("SysID/Translation Quasistatic Forward", m_sysIdRoutineTranslation.quasistatic(Direction.kForward));
+        SmartDashboard.putData("SysID/Translation Quasistatic Reverse", m_sysIdRoutineTranslation.quasistatic(Direction.kReverse));
 
-        SmartDashboard.putData("Translation Dynamic Forward", m_sysIdRoutineTranslation.dynamic(Direction.kForward));
-        SmartDashboard.putData("Translation Dynamic Reverse", m_sysIdRoutineTranslation.dynamic(Direction.kReverse));
+        SmartDashboard.putData("SysID/Translation Dynamic Forward", m_sysIdRoutineTranslation.dynamic(Direction.kForward));
+        SmartDashboard.putData("SysID/Translation Dynamic Reverse", m_sysIdRoutineTranslation.dynamic(Direction.kReverse));
 
         // Steer
-        SmartDashboard.putData("Steer Quasistatic Forward", m_sysIdRoutineSteer.quasistatic(Direction.kForward));
-        SmartDashboard.putData("Steer Quasistatic Reverse", m_sysIdRoutineSteer.quasistatic(Direction.kReverse));
+        SmartDashboard.putData("SysID/Steer Quasistatic Forward", m_sysIdRoutineSteer.quasistatic(Direction.kForward));
+        SmartDashboard.putData("SysID/Steer Quasistatic Reverse", m_sysIdRoutineSteer.quasistatic(Direction.kReverse));
 
-        SmartDashboard.putData("Steer Dynamic Forward", m_sysIdRoutineSteer.dynamic(Direction.kForward));
-        SmartDashboard.putData("Steer Dynamic Reverse", m_sysIdRoutineSteer.dynamic(Direction.kReverse));
+        SmartDashboard.putData("SysID/Steer Dynamic Forward", m_sysIdRoutineSteer.dynamic(Direction.kForward));
+        SmartDashboard.putData("SysID/Steer Dynamic Reverse", m_sysIdRoutineSteer.dynamic(Direction.kReverse));
     }
 }
