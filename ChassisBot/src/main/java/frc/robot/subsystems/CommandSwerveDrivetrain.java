@@ -7,12 +7,19 @@ import com.ctre.phoenix6.Utils;
 import com.ctre.phoenix6.swerve.SwerveDrivetrainConstants;
 import com.ctre.phoenix6.swerve.SwerveModuleConstants;
 import com.ctre.phoenix6.swerve.SwerveRequest;
+import com.therekrab.autopilot.APConstraints;
+import com.therekrab.autopilot.APProfile;
+import com.therekrab.autopilot.APTarget;
+import com.therekrab.autopilot.Autopilot;
 
 import edu.wpi.first.math.Matrix;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
+import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import edu.wpi.first.math.numbers.N1;
 import edu.wpi.first.math.numbers.N3;
+import static edu.wpi.first.units.Units.Centimeters;
+import static edu.wpi.first.units.Units.Degrees;
 import static edu.wpi.first.units.Units.Second;
 import static edu.wpi.first.units.Units.Volts;
 import edu.wpi.first.wpilibj.DriverStation;
@@ -37,6 +44,21 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
     private double m_lastSimTime;
     private Pose2d m_estimatedPose = new Pose2d();
     private Field2d m_Field2d = new Field2d();
+
+    public static final APConstraints kConstraints = new APConstraints() // holds the Acceleration and Jerk Constraints
+                                                                         // during the auton
+            .withAcceleration(5)
+            .withJerk(1);
+
+    public static final APProfile kProfile = new APProfile(kConstraints) // Determines how the robot reaches a target
+            .withErrorXY(Centimeters.of(2))
+            .withErrorTheta(Degrees.of(0.5))
+            .withBeelineRadius(Centimeters.of(8));
+
+    public static final Autopilot kAutopilot = new Autopilot(kProfile);
+
+    APTarget target = new APTarget(m_estimatedPose)
+            .withEntryAngle(Rotation2d.kZero);
 
     /* Blue alliance sees forward as 0 degrees (toward red alliance wall) */
     private static final Rotation2d kBlueAlliancePerspectiveRotation = Rotation2d.kZero;
@@ -270,6 +292,10 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
         }
     }
 
+    public ChassisSpeeds getRobotRelativeSpeeds() {
+        return getState().Speeds;
+    }
+
     private void startSimThread() {
         m_lastSimTime = Utils.getCurrentTimeSeconds();
 
@@ -284,7 +310,9 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
         });
         m_simNotifier.startPeriodic(kSimLoopPeriod);
     }
-
+    public void stop() {
+        setControl(new SwerveRequest.ApplyRobotSpeeds().withSpeeds(new ChassisSpeeds(0, 0, 0)));
+    }
     /**
      * Adds a vision measurement to the Kalman Filter. This will correct the
      * odometry pose estimate
@@ -348,4 +376,6 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
     public Pose2d getPose() {
         return m_estimatedPose;
     }
+
+
 }

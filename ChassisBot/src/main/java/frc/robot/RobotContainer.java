@@ -6,24 +6,28 @@ package frc.robot;
 
 import com.ctre.phoenix6.swerve.SwerveModule.DriveRequestType;
 import com.ctre.phoenix6.swerve.SwerveRequest;
+import com.therekrab.autopilot.APTarget;
+import com.therekrab.autopilot.Autopilot.APResult;
 
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
+import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import static edu.wpi.first.units.Units.MetersPerSecond;
 import static edu.wpi.first.units.Units.RadiansPerSecond;
 import static edu.wpi.first.units.Units.RotationsPerSecond;
+import edu.wpi.first.units.measure.LinearVelocity;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import edu.wpi.first.wpilibj2.command.button.RobotModeTriggers;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine.Direction;
-import frc.robot.autons.DriveForward;
 import frc.robot.generated.TunerConstants;
 import frc.robot.subsystems.CommandSwerveDrivetrain;
 
 public class RobotContainer {
     private double MaxSpeed = TunerConstants.kSpeedAt12Volts.in(MetersPerSecond); // kSpeedAt12Volts desired top speed
-    private double MaxAngularRate = RotationsPerSecond.of(0.75).in(RadiansPerSecond); // 3/4 of a rotation per second max angular velocity
+    private double MaxAngularRate = RotationsPerSecond.of(0.75).in(RadiansPerSecond); // 3/4 of a rotation per second
+                                                                                      // max angular velocity
 
     /* Setting up bindings for necessary control of the swerve drive platform */
     private final SwerveRequest.FieldCentric drive = new SwerveRequest.FieldCentric()
@@ -47,25 +51,24 @@ public class RobotContainer {
         // Note that X is defined as forward according to WPILib convention,
         // and Y is defined as to the left according to WPILib convention.
         drivetrain.setDefaultCommand(
-            // Drivetrain will execute this command periodically
-            drivetrain.applyRequest(() ->
-                drive.withVelocityX(-joystick.getLeftY() * MaxSpeed) // Drive forward with negative Y (forward)
-                    .withVelocityY(-joystick.getLeftX() * MaxSpeed) // Drive left with negative X (left)
-                    .withRotationalRate(-joystick.getRightX() * MaxAngularRate) // Drive counterclockwise with negative X (left)
-            )
-        );
+                // Drivetrain will execute this command periodically
+                drivetrain.applyRequest(() -> drive.withVelocityX(-joystick.getLeftY() * MaxSpeed) // Drive forward with
+                                                                                                   // negative Y
+                                                                                                   // (forward)
+                        .withVelocityY(-joystick.getLeftX() * MaxSpeed) // Drive left with negative X (left)
+                        .withRotationalRate(-joystick.getRightX() * MaxAngularRate) // Drive counterclockwise with
+                                                                                    // negative X (left)
+                ));
 
         // Idle while the robot is disabled. This ensures the configured
         // neutral mode is applied to the drive motors while disabled.
         final var idle = new SwerveRequest.Idle();
         RobotModeTriggers.disabled().whileTrue(
-            drivetrain.applyRequest(() -> idle).ignoringDisable(true)
-        );
+                drivetrain.applyRequest(() -> idle).ignoringDisable(true));
 
         joystick.a().whileTrue(drivetrain.applyRequest(() -> brake));
-        joystick.b().whileTrue(drivetrain.applyRequest(() ->
-            point.withModuleDirection(new Rotation2d(-joystick.getLeftY(), -joystick.getLeftX()))
-        ));
+        joystick.b().whileTrue(drivetrain.applyRequest(
+                () -> point.withModuleDirection(new Rotation2d(-joystick.getLeftY(), -joystick.getLeftX()))));
 
         // Run SysId routines when holding back/start and X/Y.
         // Note that each routine should be run exactly once in a single log.
@@ -79,7 +82,6 @@ public class RobotContainer {
         SmartDashboard.putData("dynamic forward steer", drivetrain.sysIdDynamicSteer(Direction.kForward));
         SmartDashboard.putData("dynamic reverse steer", drivetrain.sysIdDynamicSteer(Direction.kReverse));
 
-
         // reset the field-centric heading on left bumper press
         joystick.leftBumper().onTrue(drivetrain.runOnce(() -> drivetrain.seedFieldCentric()));
 
@@ -87,10 +89,32 @@ public class RobotContainer {
     }
 
     public Command getAutonomousCommand() {
-        return new DriveForward(drivetrain, new Pose2d(1, 0, new Rotation2d(0))) // Robot Relative Coordinates
-         .andThen( new DriveForward( drivetrain, new Pose2d(0,1, new Rotation2d(0))))
-        .andThen( new DriveForward( drivetrain, new Pose2d(-1,0, new Rotation2d(0))))
-        .andThen( new DriveForward( drivetrain, new Pose2d(0,-1, new Rotation2d(0))));
+        // return new DriveForward(drivetrain, new Pose2d(1, 0, new Rotation2d(0))) //
+        // Robot Relative Coordinates
+        // .andThen( new DriveForward( drivetrain, new Pose2d(0,1, new Rotation2d(0))))
+        // .andThen( new DriveForward( drivetrain, new Pose2d(-1,0, new Rotation2d(0))))
+        // .andThen( new DriveForward( drivetrain, new Pose2d(0,-1, new
+        // Rotation2d(0))));
         // return Commands.print("No autonomous command configured");
+        APTarget target = new APTarget(new Pose2d(1, 0, new Rotation2d(0)));
+        Command alignCommand = drivetrain.run(() -> {
+            ChassisSpeeds robotRelativeSpeeds = drivetrain.getRobotRelativeSpeeds();
+              Pose2d pose = drivetrain.getPose();
+                
+              APResult output = CommandSwerveDrivetrain.kAutopilot.calculate(pose, robotRelativeSpeeds, target);
+            
+              /* these speeds are field relative */
+              LinearVelocity veloX = output.vx();
+              LinearVelocity veloY = output.vy();
+              Rotation2d headingReference = output.targetAngle();
+            
+              /* This is where you should apply these speeds to the drivetrain */
+              drivetrain.setControl(new SwerveRequest.ApplyRobotSpeeds().withSpeeds(
+                new ChassisSpeeds(veloX.magnitude(), veloY.magnitude(), headingReference.getRadians())));
+            }).until(() -> CommandSwerveDrivetrain.kAutopilot.atTarget(drivetrain.getPose(), target)).finallyDo(drivetrain::stop);
+
+        // alignCommand = Commands.run(alignCommand);
+        return alignCommand;
+
     }
 }
