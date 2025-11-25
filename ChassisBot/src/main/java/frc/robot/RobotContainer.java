@@ -4,6 +4,8 @@
 
 package frc.robot;
 
+import java.util.ArrayList;
+
 import com.ctre.phoenix6.swerve.SwerveModule.DriveRequestType;
 import com.ctre.phoenix6.swerve.SwerveRequest;
 import com.therekrab.autopilot.APTarget;
@@ -18,6 +20,7 @@ import static edu.wpi.first.units.Units.RotationsPerSecond;
 import edu.wpi.first.units.measure.LinearVelocity;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
+import edu.wpi.first.wpilibj2.command.SequentialCommandGroup;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import edu.wpi.first.wpilibj2.command.button.RobotModeTriggers;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine.Direction;
@@ -28,6 +31,11 @@ public class RobotContainer {
     private double MaxSpeed = TunerConstants.kSpeedAt12Volts.in(MetersPerSecond); // kSpeedAt12Volts desired top speed
     private double MaxAngularRate = RotationsPerSecond.of(0.75).in(RadiansPerSecond); // 3/4 of a rotation per second
                                                                                       // max angular velocity
+                                                                                      
+
+    private int numSides = 2;
+    private int numRadius = 0;
+
 
     /* Setting up bindings for necessary control of the swerve drive platform */
     private final SwerveRequest.FieldCentric drive = new SwerveRequest.FieldCentric()
@@ -42,45 +50,50 @@ public class RobotContainer {
 
     public final CommandSwerveDrivetrain drivetrain = TunerConstants.createDrivetrain();
 
-    public RobotContainer() {
-        drivetrain.setupSysId();
-        configureBindings();
-    }
-
-    private void configureBindings() {
-        // Note that X is defined as forward according to WPILib convention,
-        // and Y is defined as to the left according to WPILib convention.
-        drivetrain.setDefaultCommand(
-                // Drivetrain will execute this command periodically
-                drivetrain.applyRequest(() -> drive.withVelocityX(-joystick.getLeftY() * MaxSpeed) // Drive forward with
-                                                                                                   // negative Y
-                                                                                                   // (forward)
-                        .withVelocityY(-joystick.getLeftX() * MaxSpeed) // Drive left with negative X (left)
-                        .withRotationalRate(-joystick.getRightX() * MaxAngularRate) // Drive counterclockwise with
-                                                                                    // negative X (left)
-                ));
-
-        // Idle while the robot is disabled. This ensures the configured
-        // neutral mode is applied to the drive motors while disabled.
-        final var idle = new SwerveRequest.Idle();
-        RobotModeTriggers.disabled().whileTrue(
-                drivetrain.applyRequest(() -> idle).ignoringDisable(true));
-
-        joystick.a().whileTrue(drivetrain.applyRequest(() -> brake));
-        joystick.b().whileTrue(drivetrain.applyRequest(
-                () -> point.withModuleDirection(new Rotation2d(-joystick.getLeftY(), -joystick.getLeftX()))));
-
-        // Run SysId routines when holding back/start and X/Y.
-        // Note that each routine should be run exactly once in a single log.
-        joystick.back().and(joystick.y()).whileTrue(drivetrain.sysIdDynamic(Direction.kForward));
-        joystick.back().and(joystick.x()).whileTrue(drivetrain.sysIdDynamic(Direction.kReverse));
-        joystick.start().and(joystick.y()).whileTrue(drivetrain.sysIdQuasistatic(Direction.kForward));
-        joystick.start().and(joystick.x()).whileTrue(drivetrain.sysIdQuasistatic(Direction.kReverse));
-
-        SmartDashboard.putData("quasistatic forward steer", drivetrain.sysIdQuasistaticSteer(Direction.kForward));
-        SmartDashboard.putData("quasistatic reverse steer", drivetrain.sysIdQuasistaticSteer(Direction.kReverse));
-        SmartDashboard.putData("dynamic forward steer", drivetrain.sysIdDynamicSteer(Direction.kForward));
-        SmartDashboard.putData("dynamic reverse steer", drivetrain.sysIdDynamicSteer(Direction.kReverse));
+    public ArrayList<APTarget> targetsInput = new ArrayList<>(); // put targets in here
+    
+        public RobotContainer() {
+            drivetrain.setupSysId();
+            configureBindings();
+        }
+    
+        private void configureBindings() {
+            // Note that X is defined as forward according to WPILib convention,
+            // and Y is defined as to the left according to WPILib convention.
+            drivetrain.setDefaultCommand(
+                    // Drivetrain will execute this command periodically
+                    drivetrain.applyRequest(() -> drive.withVelocityX(-joystick.getLeftY() * MaxSpeed) // Drive forward with
+                                                                                                       // negative Y
+                                                                                                       // (forward)
+                            .withVelocityY(-joystick.getLeftX() * MaxSpeed) // Drive left with negative X (left)
+                            .withRotationalRate(-joystick.getRightX() * MaxAngularRate) // Drive counterclockwise with
+                                                                                        // negative X (left)
+                    ));
+    
+            // Idle while the robot is disabled. This ensures the configured
+            // neutral mode is applied to the drive motors while disabled.
+            final var idle = new SwerveRequest.Idle();
+            RobotModeTriggers.disabled().whileTrue(
+                    drivetrain.applyRequest(() -> idle).ignoringDisable(true));
+    
+            joystick.a().whileTrue(drivetrain.applyRequest(() -> brake));
+            joystick.b().whileTrue(drivetrain.applyRequest(
+                    () -> point.withModuleDirection(new Rotation2d(-joystick.getLeftY(), -joystick.getLeftX()))));
+    
+            // Run SysId routines when holding back/start and X/Y.
+            // Note that each routine should be run exactly once in a single log.
+            joystick.back().and(joystick.y()).whileTrue(drivetrain.sysIdDynamic(Direction.kForward));
+            joystick.back().and(joystick.x()).whileTrue(drivetrain.sysIdDynamic(Direction.kReverse));
+            joystick.start().and(joystick.y()).whileTrue(drivetrain.sysIdQuasistatic(Direction.kForward));
+            joystick.start().and(joystick.x()).whileTrue(drivetrain.sysIdQuasistatic(Direction.kReverse));
+    
+            SmartDashboard.putData("quasistatic forward steer", drivetrain.sysIdQuasistaticSteer(Direction.kForward));
+            SmartDashboard.putData("quasistatic reverse steer", drivetrain.sysIdQuasistaticSteer(Direction.kReverse));
+            SmartDashboard.putData("dynamic forward steer", drivetrain.sysIdDynamicSteer(Direction.kForward));
+            SmartDashboard.putData("dynamic reverse steer", drivetrain.sysIdDynamicSteer(Direction.kReverse));
+    
+            SmartDashboard.putNumber("Sides", numSides);
+            SmartDashboard.putNumber("Radius", numRadius);
 
         // reset the field-centric heading on left bumper press
         joystick.leftBumper().onTrue(drivetrain.runOnce(() -> drivetrain.seedFieldCentric()));
@@ -88,33 +101,62 @@ public class RobotContainer {
         drivetrain.registerTelemetry(logger::telemeterize);
     }
 
-    public Command getAutonomousCommand() {
-        // return new DriveForward(drivetrain, new Pose2d(1, 0, new Rotation2d(0))) //
-        // Robot Relative Coordinates
-        // .andThen( new DriveForward( drivetrain, new Pose2d(0,1, new Rotation2d(0))))
-        // .andThen( new DriveForward( drivetrain, new Pose2d(-1,0, new Rotation2d(0))))
-        // .andThen( new DriveForward( drivetrain, new Pose2d(0,-1, new
-        // Rotation2d(0))));
-        // return Commands.print("No autonomous command configured");
-        APTarget target = new APTarget(new Pose2d(1, 0, new Rotation2d(0)));
-        Command alignCommand = drivetrain.run(() -> {
+
+    public Command[] driveToPointsCommand(ArrayList<APTarget> targets) {
+        ArrayList<Command> driveCommandList = new ArrayList<>();
+
+        for (int i = 0; i < targets.size(); i++) {
+            driveCommandList.add(driveCommand(targets.get(i)));
+        }
+        return driveCommandList.toArray(new Command[0]);
+
+    }
+
+    public void addTarget(double x, double y, int rotation) {
+        targetsInput.add(new APTarget(new Pose2d(x, y, new Rotation2d(rotation))));
+    }
+
+    public Command driveCommand(APTarget target) {
+        return drivetrain.run(() -> {
             ChassisSpeeds robotRelativeSpeeds = drivetrain.getRobotRelativeSpeeds();
-              Pose2d pose = drivetrain.getPose();
-                
-              APResult output = CommandSwerveDrivetrain.kAutopilot.calculate(pose, robotRelativeSpeeds, target);
-            
-              /* these speeds are field relative */
-              LinearVelocity veloX = output.vx();
-              LinearVelocity veloY = output.vy();
-              Rotation2d headingReference = output.targetAngle();
-            
-              /* This is where you should apply these speeds to the drivetrain */
-              drivetrain.setControl(new SwerveRequest.ApplyRobotSpeeds().withSpeeds(
-                new ChassisSpeeds(veloX.magnitude(), veloY.magnitude(), headingReference.getRadians())));
-            }).until(() -> CommandSwerveDrivetrain.kAutopilot.atTarget(drivetrain.getPose(), target)).finallyDo(drivetrain::stop);
+            Pose2d pose = drivetrain.getPose();
+
+            APResult output = CommandSwerveDrivetrain.kAutopilot.calculate(pose, robotRelativeSpeeds, target);
+
+            /* these speeds are field relative */
+            LinearVelocity veloX = output.vx();
+            LinearVelocity veloY = output.vy();
+            Rotation2d headingReference = output.targetAngle();
+
+            /* This is where you should apply these speeds to the drivetrain */
+            drivetrain.setControl(new SwerveRequest.ApplyRobotSpeeds().withSpeeds(
+                    new ChassisSpeeds(veloX.magnitude(), veloY.magnitude(), headingReference.getRadians())));
+        }).until(() -> CommandSwerveDrivetrain.kAutopilot.atTarget(drivetrain.getPose(), target))
+                .finallyDo(drivetrain::stop);
 
         // alignCommand = Commands.run(alignCommand);
-        return alignCommand;
+    }
+
+    public void createPolygonTargets(int sides, int r) {
+        for (int i = 0; i <= 360; i += 360/sides) {
+            addTarget(r * Math.cos(Math.toRadians(i)), r * Math.sin(Math.toRadians(i)), 0);
+        }
+    }
+
+    public Command getAutonomousCommand() {
+        // addTarget(-2.0, 0.0, 0);
+        // addTarget(-1.41421, 1.41421, 0);
+        // addTarget(0, 2, 0);
+        // addTarget(1.41421, 1.41421, 0);
+        // addTarget(2, 0, 0);
+        // addTarget(1.41421, -1.41421, 0);
+        // addTarget(0, -2, 0);
+        // addTarget(-1.41421, -1.41421, 0);
+        // addTarget(-2.0, 0, 0);
+        // addTarget(0, 0, 0);
+        // addTarget(-2.0, 0.0, 0);
+        createPolygonTargets(numSides, numRadius);
+        return new SequentialCommandGroup(driveToPointsCommand(targetsInput));
 
     }
 }
