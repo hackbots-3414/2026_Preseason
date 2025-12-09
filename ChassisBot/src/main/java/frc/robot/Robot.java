@@ -7,29 +7,45 @@ package frc.robot;
 import edu.wpi.first.wpilibj.TimedRobot;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
+import edu.wpi.first.wpilibj.DataLogManager;
+import edu.wpi.first.wpilibj.DriverStation;
+import edu.wpi.first.wpilibj.RobotController;
+import frc.robot.util.HappyRobotLogger;
+
 
 public class Robot extends TimedRobot {
   private Command m_autonomousCommand;
 
   private final RobotContainer m_robotContainer;
+  private final HappyRobotLogger happyRobotLogger;
 
   public Robot() {
     m_robotContainer = new RobotContainer();
+    happyRobotLogger = new HappyRobotLogger();
+    DataLogManager.start();
+    DriverStation.startDataLog(DataLogManager.getLog());
+
+    happyRobotLogger.log("happy robot 2", DriverStation::isEnabled);
+    happyRobotLogger.log("super happy robot", DriverStation::isAutonomous);
+    happyRobotLogger.log("Battery Voltage", RobotController::getBatteryVoltage);
   }
 
   @Override
   public void robotPeriodic() {
     CommandScheduler.getInstance().run(); 
+    happyRobotLogger.update();
   }
 
   @Override
-  public void disabledInit() {}
+  public void disabledInit() {
+  }
 
   @Override
   public void disabledPeriodic() {}
 
   @Override
-  public void disabledExit() {}
+  public void disabledExit() {
+  }
 
   @Override
   public void autonomousInit() {
