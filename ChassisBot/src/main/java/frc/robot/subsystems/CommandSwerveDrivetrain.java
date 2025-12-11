@@ -227,4 +227,12 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
         SmartDashboard.putData("SysID/Steer Dynamic Forward", m_sysIdRoutineSteer.dynamic(Direction.kForward));
         SmartDashboard.putData("SysID/Steer Dynamic Reverse", m_sysIdRoutineSteer.dynamic(Direction.kReverse));
     }
+
+    public Pose2d getPose() {
+        return getState().Pose;
+    }
+
+    public void setPose(Pose2d initialPose) {
+        resetPose(initialPose); 
+    }
 }
