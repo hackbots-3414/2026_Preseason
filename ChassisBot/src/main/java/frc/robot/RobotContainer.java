@@ -11,6 +11,7 @@ import edu.wpi.first.math.geometry.Rotation2d;
 import static edu.wpi.first.units.Units.MetersPerSecond;
 import static edu.wpi.first.units.Units.RadiansPerSecond;
 import static edu.wpi.first.units.Units.RotationsPerSecond;
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import edu.wpi.first.wpilibj2.command.button.RobotModeTriggers;
@@ -38,6 +39,7 @@ public class RobotContainer {
     public RobotContainer() {
         drivetrain.setupSysId();
         configureBindings();
+        SmartDashboard.putData("Auto Oval", drivetrain.autoOval());
     }
 
     private void configureBindings() {
@@ -75,6 +77,7 @@ public class RobotContainer {
     }
 
     public Command getAutonomousCommand() {
-        return drivetrain.testRoutine();
+        // return drivetrain.testRoutine();
+        return drivetrain.autoOval();
     }
 }

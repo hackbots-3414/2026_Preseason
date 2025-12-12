@@ -24,6 +24,7 @@ import edu.wpi.first.wpilibj.RobotController;
 import edu.wpi.first.wpilibj.smartdashboard.Field2d;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
+import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.Subsystem;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine.Direction;
@@ -235,4 +236,20 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
     public void setPose(Pose2d initialPose) {
         resetPose(initialPose); 
     }
+
+    public Command autoOval() {
+        // SwerveRequest.RobotCentric request = new SwerveRequest.RobotCentric()
+        //     .withDriveRequestType(DriveRequestType.Velocity);
+        // return applyRequest(() -> request.withVelocityX(5).withRotationalRate(Math.PI));
+        return Commands.sequence(runOnce(() -> setPose(new Pose2d(8, 2, new Rotation2d())))
+            .andThen(drive(3, 0, 0)).until(() -> getPose().getMeasureX().magnitude() > 14)
+            .andThen(drive(0,0,0)));
+    }
+
+    public Command drive(double vx, double vy, double theta) {
+        SwerveRequest.RobotCentric request = new SwerveRequest.RobotCentric().withDriveRequestType(DriveRequestType.Velocity);
+        return applyRequest(() -> request.withVelocityX(vx).withVelocityY(vy).withRotationalRate(theta));
+    }
+
+
 }
