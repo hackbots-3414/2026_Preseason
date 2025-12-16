@@ -150,7 +150,7 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
         // Update list of last poses
         Pose2d pose = getState().Pose;
         lastPoses.add(pose);
-        if (lastPoses.size() > 300) {
+        if (lastPoses.size() > 550) {
             lastPoses.remove();
         }
 
@@ -241,9 +241,13 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
         // SwerveRequest.RobotCentric request = new SwerveRequest.RobotCentric()
         //     .withDriveRequestType(DriveRequestType.Velocity);
         // return applyRequest(() -> request.withVelocityX(5).withRotationalRate(Math.PI));
-        return Commands.sequence(runOnce(() -> setPose(new Pose2d(8, 2, new Rotation2d())))
-            .andThen(drive(3, 0, 0)).until(() -> getPose().getMeasureX().magnitude() > 14)
-            .andThen(drive(0,0,0)));
+        return Commands.sequence(runOnce(() -> setPose(new Pose2d(8, 2, new Rotation2d()))),
+            drive(3, 0, 0).until(() -> getPose().getMeasureX().magnitude() > 12),
+            drive(3, 0, 1.25).until(() -> getPose().getMeasureX().magnitude() > 10 && getPose().getRotation().getDegrees() > 174),
+            drive(3, 0, -0.12).until(() -> getPose().getMeasureX().magnitude() < 5),
+            drive(3, 0, 1.2).until(() -> getPose().getRotation().getDegrees() > 0),
+            drive(3, 0, -0.25).until(() -> getPose().getMeasureX().magnitude() > 7.9))
+            .repeatedly();  // 10.93 Seconds to complete a full loop
     }
 
     public Command drive(double vx, double vy, double theta) {
