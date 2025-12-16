@@ -48,11 +48,12 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
     public static final APConstraints kConstraints = new APConstraints() // holds the Acceleration and Jerk Constraints
                                                                          // during the auton
             .withAcceleration(5)
-            .withJerk(1);
+            .withJerk(1)
+            .withVelocity(1000);
 
     public static final APProfile kProfile = new APProfile(kConstraints) // Determines how the robot reaches a target
-            .withErrorXY(Centimeters.of(2))
-            .withErrorTheta(Degrees.of(0.5))
+            .withErrorXY(Centimeters.of(3))
+            .withErrorTheta(Degrees.of(5))
             .withBeelineRadius(Centimeters.of(8));
 
     public static final Autopilot kAutopilot = new Autopilot(kProfile);
