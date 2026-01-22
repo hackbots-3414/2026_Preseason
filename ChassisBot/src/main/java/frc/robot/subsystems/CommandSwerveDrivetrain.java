@@ -4,6 +4,7 @@ package frc.robot.subsystems;
 import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.Queue;
+import java.util.LinkedList;
 import java.util.function.Supplier;
 
 import com.ctre.phoenix6.SignalLogger;
@@ -27,6 +28,7 @@ import edu.wpi.first.wpilibj.RobotController;
 import edu.wpi.first.wpilibj.smartdashboard.Field2d;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
+import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.Subsystem;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine.Direction;
@@ -42,8 +44,7 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
     private double m_lastSimTime;
     private final Field2d field;
 
-
-    // Keep track of last poses
+    // Keep track of my last several positions
     private final LinkedList<Pose2d> lastPoses;
 
     /* Blue alliance sees forward as 0 degrees (toward red alliance wall) */
@@ -108,8 +109,8 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
         if (Utils.isSimulation()) {
             startSimThread();
         }
-
         field = new Field2d();
+        SmartDashboard.putData("Field", field);
 
         lastPoses = new LinkedList<>();
     }
@@ -125,8 +126,9 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
     }
 
     public Command testRoutine() {
-        SwerveRequest.RobotCentric request = new SwerveRequest.RobotCentric().withDriveRequestType(DriveRequestType.Velocity);
-        return applyRequest(() -> request.withRotationalRate(Math.PI).withVelocityX(null));
+        SwerveRequest.RobotCentric request = new SwerveRequest.RobotCentric()
+            .withDriveRequestType(DriveRequestType.Velocity);
+        return applyRequest(() -> request.withVelocityX(5).withRotationalRate(Math.PI));
     }
 
 
@@ -150,17 +152,15 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
                 m_hasAppliedOperatorPerspective = true;
             });
         }
-        
 
         // Update list of last poses
-
         Pose2d pose = getState().Pose;
         lastPoses.add(pose);
-
-        if (lastPoses.size() > 100) {
+        if (lastPoses.size() > 550) {
             lastPoses.remove();
         }
 
+        // Update field
         field.setRobotPose(pose);
         field.getObject("History").setPoses(lastPoses);
 
@@ -170,7 +170,6 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
         SmartDashboard.putNumber("speed/vx", speed.vxMetersPerSecond);
         SmartDashboard.putNumber("speed/vy", speed.vyMetersPerSecond);
         SmartDashboard.putNumber("speed/omega", speed.omegaRadiansPerSecond);
-
         SmartDashboard.putData("field", field);
     }
 
@@ -239,4 +238,32 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
         SmartDashboard.putData("SysID/Steer Dynamic Reverse", m_sysIdRoutineSteer.dynamic(Direction.kReverse));
         
     }
+
+    public Pose2d getPose() {
+        return getState().Pose;
+    }
+
+    public void setPose(Pose2d initialPose) {
+        resetPose(initialPose); 
+    }
+
+    public Command autoOval() {
+        // SwerveRequest.RobotCentric request = new SwerveRequest.RobotCentric()
+        //     .withDriveRequestType(DriveRequestType.Velocity);
+        // return applyRequest(() -> request.withVelocityX(5).withRotationalRate(Math.PI));
+        return Commands.sequence(runOnce(() -> setPose(new Pose2d(8, 2, new Rotation2d()))),
+            drive(3, 0, 0).until(() -> getPose().getMeasureX().magnitude() > 12),
+            drive(3, 0, 1.25).until(() -> getPose().getMeasureX().magnitude() > 10 && getPose().getRotation().getDegrees() > 174),
+            drive(3, 0, -0.12).until(() -> getPose().getMeasureX().magnitude() < 5),
+            drive(3, 0, 1.2).until(() -> getPose().getRotation().getDegrees() > 0),
+            drive(3, 0, -0.25).until(() -> getPose().getMeasureX().magnitude() > 7.9))
+            .repeatedly();  // 10.93 Seconds to complete a full loop
+    }
+
+    public Command drive(double vx, double vy, double theta) {
+        SwerveRequest.RobotCentric request = new SwerveRequest.RobotCentric().withDriveRequestType(DriveRequestType.Velocity);
+        return applyRequest(() -> request.withVelocityX(vx).withVelocityY(vy).withRotationalRate(theta));
+    }
+
+
 }
