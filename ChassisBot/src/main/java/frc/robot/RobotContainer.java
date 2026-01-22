@@ -75,6 +75,6 @@ public class RobotContainer {
     }
 
     public Command getAutonomousCommand() {
-        return drivetrain.driveForwards();
+        return drivetrain.testRoutine();
     }
 }

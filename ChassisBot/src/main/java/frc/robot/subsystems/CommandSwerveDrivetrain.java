@@ -1,5 +1,9 @@
 package frc.robot.subsystems;
 
+ import java.lang.reflect.Array;
+import java.util.ArrayList;
+import java.util.LinkedList;
+import java.util.Queue;
 import java.util.function.Supplier;
 
 import com.ctre.phoenix6.SignalLogger;
@@ -12,6 +16,7 @@ import com.ctre.phoenix6.swerve.SwerveRequest;
 import edu.wpi.first.math.Matrix;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
+import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import edu.wpi.first.math.numbers.N1;
 import edu.wpi.first.math.numbers.N3;
 import static edu.wpi.first.units.Units.Volts;
@@ -19,6 +24,7 @@ import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.DriverStation.Alliance;
 import edu.wpi.first.wpilibj.Notifier;
 import edu.wpi.first.wpilibj.RobotController;
+import edu.wpi.first.wpilibj.smartdashboard.Field2d;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Subsystem;
@@ -34,6 +40,11 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
     private static final double kSimLoopPeriod = 0.005; // 5 ms
     private Notifier m_simNotifier = null;
     private double m_lastSimTime;
+    private final Field2d field;
+
+
+    // Keep track of last poses
+    private final LinkedList<Pose2d> lastPoses;
 
     /* Blue alliance sees forward as 0 degrees (toward red alliance wall) */
     private static final Rotation2d kBlueAlliancePerspectiveRotation = Rotation2d.kZero;
@@ -97,6 +108,10 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
         if (Utils.isSimulation()) {
             startSimThread();
         }
+
+        field = new Field2d();
+
+        lastPoses = new LinkedList<>();
     }
 
     /**
@@ -109,9 +124,12 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
         return this.run(() -> this.setControl(requestSupplier.get()));
     }
 
-    public Command driveForwards() {
-        return applyRequest(() -> new SwerveRequest.RobotCentric().withVelocityX(4.0).withDriveRequestType(DriveRequestType.Velocity));
+    public Command testRoutine() {
+        SwerveRequest.RobotCentric request = new SwerveRequest.RobotCentric().withDriveRequestType(DriveRequestType.Velocity);
+        return applyRequest(() -> request.withRotationalRate(Math.PI).withVelocityX(null));
     }
+
+
 
     @Override
     public void periodic() {
@@ -132,6 +150,28 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
                 m_hasAppliedOperatorPerspective = true;
             });
         }
+        
+
+        // Update list of last poses
+
+        Pose2d pose = getState().Pose;
+        lastPoses.add(pose);
+
+        if (lastPoses.size() > 100) {
+            lastPoses.remove();
+        }
+
+        field.setRobotPose(pose);
+        field.getObject("History").setPoses(lastPoses);
+
+        ChassisSpeeds speed = getState().Speeds;
+
+        
+        SmartDashboard.putNumber("speed/vx", speed.vxMetersPerSecond);
+        SmartDashboard.putNumber("speed/vy", speed.vyMetersPerSecond);
+        SmartDashboard.putNumber("speed/omega", speed.omegaRadiansPerSecond);
+
+        SmartDashboard.putData("field", field);
     }
 
     private void startSimThread() {
@@ -197,5 +237,6 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
 
         SmartDashboard.putData("SysID/Steer Dynamic Forward", m_sysIdRoutineSteer.dynamic(Direction.kForward));
         SmartDashboard.putData("SysID/Steer Dynamic Reverse", m_sysIdRoutineSteer.dynamic(Direction.kReverse));
+        
     }
 }
